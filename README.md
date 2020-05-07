@@ -67,5 +67,5 @@ localSaveDataKit.raw('cookie_name', 'value');
 var cookie_name = localSaveDataKit.rawGet('cookie_name'); // value
 ``` 
 
-## Licenses
+## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
