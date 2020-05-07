@@ -1,5 +1,5 @@
 # LocalSaveDataKit
-A simply local data save / load for web
+A simply local data save / load for legacy web
 
 ## Summary 
 Keep user input data when refresh or page movement.
