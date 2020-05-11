@@ -16,10 +16,14 @@ function LocalSaveDataKit(options) {
 LocalSaveDataKit.prototype.options = {
     scroll: false,
     expireSeconds: 30,
-    uniqueId: 'lsdk'
+    uniqueId: 'lsdk',
+    activeClass: 'on'
 };
+
+// 라이브러리 내에서 사용될 변수
 LocalSaveDataKit.prototype.vars = {
-    isScrollLock: true // 스크롤 위치 저장 락. loadScroll 호출이 되어야 스크롤 위치를 저장합니다.
+    isScrollLock: true, // 스크롤 위치 저장 락. loadScroll 호출이 되어야 스크롤 위치를 저장합니다.
+    ulTypes: 0 // ul > li > a 가 1번, ul > li 가 2번
 };
 /**
  * Init library
@@ -34,8 +38,7 @@ LocalSaveDataKit.prototype.init = function (loadMapCallback) {
     });
     if (t.options.scroll) {
         $(window).scroll($.throttle(1000, function () {
-            if (!t.vars.isScrollLock)
-                t.cookie.set(t.options.uniqueId + '_scroll', parseInt($(window).scrollTop()), t.options.expireSeconds);
+            if (!t.vars.isScrollLock) t.cookie.set(t.options.uniqueId + '_scroll', parseInt($(window).scrollTop()), t.options.expireSeconds);
         }));
     }
 };
@@ -52,7 +55,6 @@ LocalSaveDataKit.prototype.save = function () {
         if (id !== undefined) {
             var tagName = e.prop('tagName').toLowerCase();
             var type = e.attr('type');
-
             var value = e.val();
 
             switch (tagName) {
@@ -63,18 +65,14 @@ LocalSaveDataKit.prototype.save = function () {
                     value = selectedElement.length >= 1 ?
                         selectedElement.data('value') :
                         e.find('li.localSaveData-selected').data('value');
-                    if (value === undefined || value === '') return;
+                    if (value === undefined || value === '') return true;
                     break;
                 case "input":
-                    // text와 checkbox만 허용 데이터 저장 허용
-                    if (type === "checkbox") {
-                        value = e.is(":checked");
-                    } else if (type === "text") {
-                        value = e.val();
-                    }
+                    if (type === "checkbox") value = e.is(":checked");
+                    else if (type === "text") value = e.val();
                     break;
                 default:
-                    if (value === undefined || value === '') return;
+                    if (value === undefined || value === '') return true;
                     break;
             }
             t.cookie.set(t.options.uniqueId + '_' + id, value, t.options.expireSeconds);
@@ -82,39 +80,62 @@ LocalSaveDataKit.prototype.save = function () {
     });
 };
 
+/**
+ * 수동으로 쿠키를 저장합니다
+ * 
+ * @deprecated
+ */
 LocalSaveDataKit.prototype.raw = function (id, value) {
-    var t = this;
-    t.cookie.set(t.options.uniqueId + '_' + id, value, t.options.expireSeconds);
+    this.setCookie(id, value);
 };
 
+LocalSaveDataKit.prototype.setCookie = function (id, value) {
+    var t = this;
+    t.cookie.set(t.options.uniqueId + '_' + id, value, t.options.expireSeconds);
+}
+
+/**
+ * 수동으로 쿠키를 가져옵니다
+ * 
+ * @deprecated
+ */
 LocalSaveDataKit.prototype.rawGet = function (id) {
+    return this.getCookie(id);
+}
+
+LocalSaveDataKit.prototype.getCookie = function (id) {
     var t = this;
     return t.cookie.get(t.options.uniqueId + '_' + id);
 }
+
+
 LocalSaveDataKit.prototype.load = function (callback) {
     var t = this;
     $('.localSaveData').each(function (index, element) {
         var e = $(element);
         var id = e.attr('id');
-        if (id !== undefined) {
-            var tagName = e.prop('tagName').toLowerCase();
-            var type = e.attr('type');
-            var value = t.cookie.get(t.options.uniqueId + '_' + id);
-            if (value !== undefined && value !== '') {
-                var target = $('#' + id + '.localSaveData');
-                switch (tagName) {
-                    case 'input':
-                        if (type === "checkbox") {
-                            target.prop("checked", value === "true");
-                        } else if (type === "text") {
-                            target.val(value);
-                        }
-                        break;
-                    default:
-                        target.val(value);
-                }
-            }
+        if (id === undefined) return true;
+        
+        var tagName = e.prop('tagName').toLowerCase();
+        var type = e.attr('type');
+        var value = t.cookie.get(t.options.uniqueId + '_' + id);
+        if (value === undefined || value === '') return true;
+        var target = $('#' + id + '.localSaveData');
+        switch (tagName) {
+            case 'ul':
+                t.ulTypes = target.find('li.localSaveData-selected a').length >= 1 ? 1 : 2;
+                $('#' + id).find('li').removeClass(t.options.activeClass + ' localSaveData-selected');
+                if (t.ulTypes === 1) $('#' + id).find('li a[data-value="' + value + '"]').parent().addClass(t.options.activeClass + ' localSaveData-selected');
+                else if (t.ulTypes === 2) $('#' + id).find('li[data-value="' + value + '"]').addClass(t.options.activeClass + ' localSaveData-selected');
+                break;
+            case 'input':
+                if (type === "checkbox") target.prop("checked", value === "true");
+                else if (type === "text") target.val(value);
+                break;
+            default:
+                target.val(value);
         }
+        
     });
     if (typeof callback == 'function') callback();
 };

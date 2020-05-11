@@ -19,9 +19,9 @@ Keep user input data when refresh or page movement.
 Case 1) ul > li > a[data-value="{value}"]
 ```html
 <ul class="localSaveData" id="ulData">
-    <li class="on"><a data-value="Test">Test</a></li>
-    <li class="on"><a data-value="Test 2">Test 2</a></li>
-    <li class="on"><a data-value="Test 3">Test 3</a></li>
+    <li class="on localSaveData-selected"><a data-value="Test">Test</a></li>
+    <li class=""><a data-value="Test 2">Test 2</a></li>
+    <li class=""><a data-value="Test 3">Test 3</a></li>
 </ul>
 ```
 
