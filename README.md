@@ -38,6 +38,15 @@ Case 3) select > option
 </select>
 ```
 
+Case 4) ul > li[data-value="{value}"]
+```html
+<ul class="localSaveData" id="ulDataTwo">
+    <li class="on localSaveData-selected" data-value="Test">Test</li>
+    <li data-value="Test 2">Test 2</li>
+    <li data-value="Test 3">Test 3</li>
+</ul>
+```
+
 > Initialize a localSaveDataKit.
 ```javascript
 var localSaveDataKit = new LocalSaveDataKit({
@@ -61,10 +70,10 @@ function fetch() {
 > You can also manually load and save the specific data in cookies.
 ```javascript
 // save
-localSaveDataKit.raw('cookie_name', 'value');
+localSaveDataKit.setCookie('cookie_name', 'value');
 
 // load
-var cookie_name = localSaveDataKit.rawGet('cookie_name'); // value
+var cookie_name = localSaveDataKit.getCookie('cookie_name'); // value
 ``` 
 
 ## License
